@@ -16,7 +16,7 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-data "aws_subnet_ids" "public" {
+data "aws_subnets" "public" {
   vpc_id = var.vpc_id
   filter {
     name   = "tag:Name"
@@ -25,7 +25,7 @@ data "aws_subnet_ids" "public" {
   }
 }
 
-data "aws_subnet_ids" "private" {
+data "aws_subnets" "private" {
   vpc_id = var.vpc_id
   filter {
     name   = "tag:Name"
@@ -140,7 +140,7 @@ resource "aws_ecs_service" "ecs_service" {
   deployment_minimum_healthy_percent = "75"
   desired_count                      = var.desired_count
   network_configuration {
-    subnets         = data.aws_subnet_ids.private.ids
+    subnets         = data.aws_subnets.private.ids
     security_groups = [aws_security_group.fargate_container_sg.id]
   }
   # Track the latest ACTIVE revision
@@ -186,7 +186,7 @@ resource "aws_lb" "public" {
   load_balancer_type = "application"
   idle_timeout       = "30"
   security_groups    = [aws_security_group.public_lb_access.id]
-  subnets            = data.aws_subnet_ids.public.ids
+  subnets            = data.aws_subnets.public.ids
   tags = {
     Environment = "aws-ias-fargate"
   }
@@ -252,7 +252,7 @@ resource "aws_lb" "private" {
   load_balancer_type = "application"
   idle_timeout       = "30"
   security_groups    = [aws_security_group.private_lb_access.id]
-  subnets            = data.aws_subnet_ids.private.ids
+  subnets            = data.aws_subnets.private.ids
   tags = {
     Environment = "aws-ias-fargate"
   }
